@@ -1,72 +1,19 @@
 const express = require("express"),
   app = express(),
   bodyParser = require("body-parser"),
-  mongoose = require("mongoose");
+  mongoose = require("mongoose"),
+  Campground = require("./models/campground"),
+  seedDB = require("./seeds"),
+  Comment = require("./models/comment");
+
 
 mongoose.connect("mongodb://localhost/yelp_camp", { useNewUrlParser: true });
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
+app.use(express.static(__dirname + "/public"))
+seedDB();
 
-//Schema Setup
-let campgroundSchema = new mongoose.Schema({
-  name: String,
-  image: String,
-  description: String
-});
 
-let Campground = mongoose.model("Campground", campgroundSchema);
-
-Campground.create(
-  {
-    name: "Granite Hill",
-    image: "https://farm4.staticflickr.com/3751/9580653400_e1509d6696.jpg",
-    description:
-      "This is a Granite Hill camground. No water, no bathrooms. Beautiful granite!"
-  },
-  (err, campground) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("Newly created campground: ");
-      console.log(campground);
-    }
-  }
-);
-
-var campgrounds = [
-  {
-    name: "Salmon Creek",
-    image: "https://farm4.staticflickr.com/3273/2602356334_20fbb23543.jpg"
-  },
-  {
-    name: "Granite Hill",
-    image: "https://farm4.staticflickr.com/3751/9580653400_e1509d6696.jpg"
-  },
-  {
-    name: "Mountain Goat's Rest",
-    image: "https://farm9.staticflickr.com/8167/7121865553_e1c6a31f07.jpg"
-  },
-  {
-    name: "Salmon Creek",
-    image: "https://farm4.staticflickr.com/3273/2602356334_20fbb23543.jpg"
-  },
-  {
-    name: "Granite Hill",
-    image: "https://farm4.staticflickr.com/3751/9580653400_e1509d6696.jpg"
-  },
-  {
-    name: "Salmon Creek",
-    image: "https://farm4.staticflickr.com/3273/2602356334_20fbb23543.jpg"
-  },
-  {
-    name: "Granite Hill",
-    image: "https://farm4.staticflickr.com/3751/9580653400_e1509d6696.jpg"
-  },
-  {
-    name: "Mountain Goat's Rest",
-    image: "https://farm9.staticflickr.com/8167/7121865553_e1c6a31f07.jpg"
-  }
-];
 
 app.get("/", (req, res) => {
   res.render("landing");
@@ -79,7 +26,7 @@ app.get("/campgrounds", (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      res.render("index", { campgrounds: allCampgrounds });
+      res.render("campgrounds/index", { campgrounds: allCampgrounds });
     }
   });
 });
@@ -105,18 +52,58 @@ app.post("/campgrounds", (req, res) => {
 
 //NEW - show form to create new campground
 app.get("/campgrounds/new", (req, res) => {
-  res.render("new");
+  res.render("campgrounds/new");
 });
 
 //SHOW - shows info about a sigle camground
 app.get("/campgrounds/:id", (req, res) => {
   //find campground with provided ID
-  Campground.findById(req.params.id, (err, foundCampground) => {
+  Campground.findById(req.params.id).populate("comments").exec((err, foundCampground) => {
     if (err) {
       console.log(err);
     } else {
       //render show template with that campground
-      res.render("show", { campground: foundCampground });
+      res.render("campgrounds/show", { campground: foundCampground });
+    }
+  });
+});
+
+
+//=========================================
+//            COMMENTS ROUTE
+//=========================================
+
+app.get("/campgrounds/:id/comments/new", (req, res) => {
+  //find campground by id
+  Campground.findById(req.params.id, (err, campground) => {
+    if (err) {
+      console.log(err);
+    }
+    else {
+      res.render("comments/new", { campground: campground });
+    }
+  })
+});
+
+app.post("/campgrounds/:id/comments", (req, res) => {
+  //lookup campground using ID
+  Campground.findById(req.params.id, (err, campground) => {
+    if(err) {
+      console.log(err);
+      res.redirect("/campgrounds");
+    }
+    else {
+      //create new comment
+      Comment.create(req.body.comment, (err, comment) => {
+        if (err) {
+          console.log(err);
+        }
+        else {
+          campground.comments.push(comment);
+          campground.save();
+          res.redirect('/campgrounds/' + campground._id)
+        }
+      });
     }
   });
 });
