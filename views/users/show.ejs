@@ -1,0 +1,31 @@
+<% include ../partials/header %>
+
+<div class="row">
+    <div class="col-md-4">
+        <h1><%=` ${user.firstName} ${user.lastName} `%></h1>
+        <div class="thumbnail">
+            <img src="<%= user.avatar %>" alt="user profile image">
+            <div class="caption">
+                <a href="mailto:<%= user.email %>"><%= user.email %></a>
+            </div>
+        </div>
+        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Vel quisquam, harum, explicabo quae est neque 
+        praesentium recusandae asperiores nemo similique alias corporis officia blanditiis quasi ipsa natus temporibus 
+        minus. Velit, tempora eos soluta corporis, aliquid tenetur maiores est dignissimos numquam sunt adipisci, 
+        autem nesciunt rerum accusantium? Repudiandae, earum. Iusto excepturi quidem maiores dolor id adipisci 
+        exercitationem natus delectus facere a vero quisquam reiciendis commodi eius earum.
+    </div>
+    <div class="col-md-8">
+        <h3><%=` ${user.username}'s campgrounds: `%></h3>
+        <ul>
+            <% if(campgrounds.length > 0) { %>
+                <% campgrounds.forEach((campground) => { %>
+                    <li><a href="/campgrounds/<%= campground.id %>"><%= campground.name %></a></li>
+                <% }) %>
+            <% } %>
+        </ul>
+    </div>
+</div>
+
+
+<% include ../partials/footer %>

@@ -27,6 +27,9 @@ app.use(flash());
 //seed the database
 // seedDB();
 
+//MomentJS for time lapse
+app.locals.moment = require("moment");
+
 //PASSPORT CONFIGURATION
 app.use(require("express-session")({
   secret: "Meaty is the best dog in the world!",
