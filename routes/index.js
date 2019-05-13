@@ -2,7 +2,11 @@ const express  = require("express"),
     router     = express.Router(), 
     passport   = require("passport"),
     User       = require("../models/user"),
-    Campground = require("../models/campground")
+    Campground = require("../models/campground"),
+    async      = require("async"),
+    nodemailer = require("nodemailer"),
+    crypto     = require("crypto");
+
 
 //root route
 router.get("/", (req, res) => {
@@ -60,6 +64,64 @@ router.post("/register", function(req, res){
     res.redirect("/campgrounds");
   });
   
+// //forgot route
+// router.get("/forgot", (req, res) => {
+//   res.render("forgot");
+// });
+
+// router.post("/forgot", (req, res, next) => {
+//   async.waterfall([
+//     (done) => {
+//       crypto.randomBytes(20, (err, buf) => {
+//         var token = buf.toString("hex");
+//         done(err, token);
+//       });
+//     },
+//     (token, done) => {
+//       User.findOne({ email: req.body.email }, (err, user) => {
+//         if(!user) {
+//           req.flash("error", "No account with that email address exists.");
+//           return res.redirect("/forgot");
+//         }
+//         user.resetPasswordToken = token;
+//         user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+//         user.save((err) => {
+//           done(err, token, user);
+//         });
+//       });
+//     },
+//     (token, user, done) => {
+//       var smtpTransport = nodemailer.createTransport({
+//         service: "Gmail",
+//         auth: {
+//           user: "yelpcampdom@gmail.com",
+//           pass: process.env.GMAILPW
+//         }
+//       });
+//       var mailOptions = {
+//         to: user.email,
+//         from: "yelpcampdom@gmail.com",
+//         subject: "Node.js Password Reset",
+//         text: `You are receiving this because you (or someone else) have requested the reset of the password.
+//         Please click on the following link, or paste this into your browser to complete the process."
+//         http://${req.headers.host}/reset/${token}
+//         If you did not request this, please ignore this email and your password will remain unchanged. `
+//       };
+//       smtpTransport.sendMail(mailOptions, (err) => {
+//         console.log("mail sent");
+//         req.flash("success", `An email has been sent to ${user.email} with further instructions.`);
+//         done(err, "done");
+//       });
+//     }
+//   ],
+//   (err) => {
+//     if(err) return next(err);
+//     res.redirect("/forgot");
+//   });
+// }); 
+
+
 //USER PROFILE ROUTE
   router.get("/users/:id", (req, res) => {
     User.findById(req.params.id, (err, foundUser) => {
